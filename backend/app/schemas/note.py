@@ -4,8 +4,8 @@ class NoteBase(BaseModel):
   title: str
   content: str
 
-class NoteCreate(NoteBase):
-  pass
+class NoteUpdate(NoteBase):
+  version: int
 
 class Note(NoteBase):
   id: int

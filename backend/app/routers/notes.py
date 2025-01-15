@@ -13,7 +13,7 @@ async def get_notes(current_user: User = Depends(get_current_user), db: Session 
   return notes
 
 @router.post("/api/notes", response_model=note.Note, status_code=status.HTTP_201_CREATED)
-async def create_note(note: note.NoteCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_note(note: note.NoteBase, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
   db_note = Note(**note.dict(), user_id=current_user.id)
   db.add(db_note)
   db.commit()
@@ -21,12 +21,16 @@ async def create_note(note: note.NoteCreate, current_user: User = Depends(get_cu
   return db_note
 
 @router.put("/api/notes/{note_id}", response_model=note.Note)
-async def update_note(note_id: int, note: note.NoteCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def update_note(note_id: int, note: note.NoteUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
   db_note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
   if not db_note:
     raise HTTPException(status_code=404, detail="Nota no encontrada")
+  # Verificar la versión
+  if note.version != db_note.version:
+    raise HTTPException(status_code=409, detail="Conflicto de actualización: hay otra actualización pendiente.")
   db_note.title = note.title
   db_note.content = note.content
+  db_note.version += 1
   db.commit()
   db.refresh(db_note)
   return db_note
