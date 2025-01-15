@@ -1,0 +1,41 @@
+# Entorno virtual
+venv/
+__pycache__/
+*.py[cod]
+
+# Archivos de configuración de IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de configuración de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de base de datos
+*.sqlite3
+*.db
+
+# Archivos de logs
+*.log
+
+# Archivos de pruebas
+*.cover
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Archivos de configuración de herramientas
+*.env
+*.env.local
+*.env.*.local
+
+# Archivos de caché
+.cache/
+
+# Archivos de configuración de herramientas
+*.env
+*.env.local
+*.env.*.local
