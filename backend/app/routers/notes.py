@@ -5,15 +5,16 @@ from app.schemas import note
 from app.services.auth_service import get_current_user
 from app.models.user import User
 from app.models.note import Note
+from typing import List
 router = APIRouter()
 
-@router.get("/api/notes")
+@router.get("/api/notes", response_model=List[note.NoteItem])
 async def get_notes(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-  notes = db.query(Note).filter(Note.user_id == current_user.id).all()
+  notes = db.query(Note.id, Note.title).filter(Note.user_id == current_user.id).all()
   return notes
 
 @router.post("/api/notes", response_model=note.Note, status_code=status.HTTP_201_CREATED)
-async def create_note(note: note.NoteBase, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_note(note: note.NoteCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
   db_note = Note(**note.dict(), user_id=current_user.id)
   db.add(db_note)
   db.commit()

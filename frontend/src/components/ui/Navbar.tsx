@@ -23,6 +23,10 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const handleTitleClick = () => {
+    navigate('/');
+  };
+
   const handleCreateNote = () => {
 
   }
@@ -30,7 +34,7 @@ const Navbar: React.FC = () => {
   return (
     <AppBar position="static" color='warning'>
       <Toolbar>
-        <Typography variant="h6" style={{ flexGrow: 1 }}>
+        <Typography variant="h5" style={{ flexGrow: 1, cursor: 'pointer' }} onClick={handleTitleClick}>
           Notes App
         </Typography>
         <IconButton color="inherit" onClick={handleCreateNote}>
