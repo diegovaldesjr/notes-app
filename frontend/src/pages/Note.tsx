@@ -1,13 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, IconButton, Stack, TextareaAutosize, TextField, Typography } from '@mui/material';
+import DOMPurify from 'dompurify';
 import React, { useContext, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
 import Navbar from '../components/ui/Navbar';
 import { AuthContext } from '../context/AuthContext';
-import useDeleteNote from '../hooks/useDeleteNote';
 import useFetchNote from '../hooks/useFetchNote';
-import useSaveNote from '../hooks/useSaveNote';
 
 const Note: React.FC = () => {
   const authContext = useContext(AuthContext);
@@ -17,12 +16,10 @@ const Note: React.FC = () => {
   }
 
   const { id } = useParams<{ id?: string }>();
-  const { note, loading, error } = useFetchNote(Number(id));
+  const { note, loading, error, addNote, updateNote, deleteNote } = useFetchNote(Number(id));
   const { token } = authContext;
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const { addNote, error: errorSave } = useSaveNote();
-  const { deleteNote, error: errorDelete } = useDeleteNote();
   const navigate = useNavigate();
 
   const handleDeleteNote = async () => {
@@ -31,8 +28,8 @@ const Note: React.FC = () => {
       await deleteNote(Number(id));
       alert('Nota eliminada exitosamente.');
       navigate('/');
-    } catch(error) {
-      alert(errorDelete);
+    } catch(e) {
+      alert(error);
     }
   }
 
@@ -47,21 +44,32 @@ const Note: React.FC = () => {
         alert('El contenido de la nota no puede estar vacío');
         return;
       }
-  
+
+      // Sanitiza los inputs antes de enviarlos
+      const sanitizedTitle = DOMPurify.sanitize(title);
+      const sanitizedContent = DOMPurify.sanitize(content);
+      
       if (!id) {
-        await addNote(title, content);
+        await addNote(sanitizedTitle, sanitizedContent);
+      } 
+      if (id && note) {
+        await updateNote(Number(id), sanitizedTitle, sanitizedContent, note.version)
       }
       alert('Nota guardada exitosamente.');
-    } catch(error) {
-      alert(errorSave);
+    } catch(e) {
+      alert(error);
     }
   }
 
   useEffect(() => {
-    if (!note || !id) return;
-    setTitle(note.title);
-    setContent(note.content);
-  }, [note, id]);
+    if (id && note) {
+      setTitle(note.title);
+      setContent(note.content);
+    } else {
+      setTitle('');
+      setContent('');
+    }
+  }, [id, note]);
 
   if (!token) {
     return <Navigate to="/login" />;
@@ -99,9 +107,11 @@ const Note: React.FC = () => {
             onChange={(e) => setTitle(e.target.value)} 
             required
           />
-          <IconButton color="inherit" onClick={handleDeleteNote}>
-            <DeleteIcon color='error' />
-          </IconButton>
+          {id && (
+            <IconButton color="inherit" onClick={handleDeleteNote}>
+              <DeleteIcon color='error' />
+            </IconButton>
+          )}
         </Stack>
         
         <TextareaAutosize 
