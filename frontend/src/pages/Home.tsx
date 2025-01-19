@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Divider, Stack, Typography } from '@mui/material';
 import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import NotesList from '../components/Notes/NotesList';
@@ -31,10 +31,15 @@ const Home: React.FC = () => {
   return (
     <>
       <Navbar />
-      <Typography variant="h6" my={4} paddingLeft={3}>Mis notas</Typography>
-      {notes && (
-        <NotesList notes={notes}/>
-      )}
+      <Stack
+        gap={2}
+      >
+        <Typography variant="h5" my={4} paddingLeft={3} fontWeight={700} marginBottom={2}>Mis notas</Typography>
+        <Divider />
+        {notes && (
+          <NotesList notes={notes}/>
+        )}
+      </Stack>
     </>
   );
 };

@@ -29,7 +29,6 @@ const Note: React.FC = () => {
       if (!confirmDelete) return;
       
       await deleteNote(Number(id));
-      alert('Nota eliminada exitosamente.');
       navigate('/');
     } catch(e) {
       alert(e);
