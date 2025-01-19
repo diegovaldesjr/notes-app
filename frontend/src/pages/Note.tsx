@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, IconButton, Stack, TextareaAutosize, TextField, Typography } from '@mui/material';
+import { Button, IconButton, Stack, TextareaAutosize, TextField } from '@mui/material';
 import DOMPurify from 'dompurify';
 import React, { useContext, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
@@ -16,7 +16,7 @@ const Note: React.FC = () => {
   }
 
   const { id } = useParams<{ id?: string }>();
-  const { note, loading, error, addNote, updateNote, deleteNote } = useFetchNote(Number(id));
+  const { note, loading, fetchNoteById, addNote, updateNote, deleteNote } = useFetchNote(Number(id));
   const { token } = authContext;
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -25,11 +25,14 @@ const Note: React.FC = () => {
   const handleDeleteNote = async () => {
     try {
       if (!id) return;
+      const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta nota?");
+      if (!confirmDelete) return;
+      
       await deleteNote(Number(id));
       alert('Nota eliminada exitosamente.');
       navigate('/');
     } catch(e) {
-      alert(error);
+      alert(e);
     }
   }
 
@@ -51,13 +54,22 @@ const Note: React.FC = () => {
       
       if (!id) {
         await addNote(sanitizedTitle, sanitizedContent);
-      } 
+      }
       if (id && note) {
         await updateNote(Number(id), sanitizedTitle, sanitizedContent, note.version)
       }
       alert('Nota guardada exitosamente.');
-    } catch(e) {
-      alert(error);
+    } catch(e: any) {
+      if (e.message !== '409') {
+        alert(e);
+        return;
+      }
+      const confirmDelete = window.confirm('Conflicto de actualización: hay otra actualización pendiente.\n\n' +
+        'Desea actualizar?\n\n' +
+        'Consejo: asegúrate de guardar los cambios hechos porque se perderán al actualizar.');
+      if(confirmDelete) {
+        await fetchNoteById(Number(id));
+      }
     }
   }
 
@@ -122,7 +134,6 @@ const Note: React.FC = () => {
           required
         />
 
-        {error && <Typography color="error">{error}</Typography>}
         <Button variant="contained" color="warning" onClick={handleSaveNote}>
           Guardar
         </Button>

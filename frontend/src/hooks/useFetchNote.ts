@@ -7,13 +7,12 @@ import { Note } from '../types';
 const useFetchNote = (id: number) => {
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
   const token = authContext?.token;
   const url = process.env.REACT_APP_API_URL;
 
-  const fetchNoteById = async () => {
+  const fetchNoteById = async (id: number) => {
     try {
       const response = await axios.get(`${url}/api/notes/${id}`, {
         headers: {
@@ -23,11 +22,10 @@ const useFetchNote = (id: number) => {
       setNote(response.data);
       setLoading(false);
     } catch (error: any) {
-      setError(error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         navigate('/login');
       } else {
-        console.error('Error fetching note:', error);
+        throw new Error('Error al obtener nota.');
       }
     }
   };
@@ -40,18 +38,17 @@ const useFetchNote = (id: number) => {
         },
       });
       const newNote = response.data
-      setNote(newNote)
+      setNote(newNote);
       setLoading(false);
       navigate(`/note/${newNote.id}`);
     } catch (error: any) {
-      setError(error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (authContext?.logout) {
           authContext.logout()
         }
         navigate('/login');
       } else {
-        console.error('Error adding note:', error);
+        throw new Error('Error al crear nota.');
       }
     }
   };
@@ -63,16 +60,19 @@ const useFetchNote = (id: number) => {
           Authorization: `Bearer ${token}`,
         },
       });
+      const newNote = response.data;
+      setNote(newNote);
       setLoading(false);
     } catch (error: any) {
-      setError(error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (authContext?.logout) {
           authContext.logout()
         }
         navigate('/login');
+      } else if (axios.isAxiosError(error) && error.response?.status === 409) {
+        throw new Error('409');
       } else {
-        console.error('Error adding note:', error);
+        throw new Error('Error al actualizar nota.');
       }
     }
   };
@@ -84,23 +84,23 @@ const useFetchNote = (id: number) => {
           Authorization: `Bearer ${token}`,
         },
       });
+      setNote(null);
       setLoading(false);
     } catch (error: any) {
-      setError(error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         navigate('/login');
       } else {
-        console.error('Error fetching note:', error);
+        throw new Error('Error al eliminar nota.');
       }
     }
   };
 
   useEffect(() => {
     if (!token || !id) return;
-    fetchNoteById();
+    fetchNoteById(id);
   }, []);
 
-  return { note, loading, error, addNote, updateNote, deleteNote };
+  return { note, loading, fetchNoteById, addNote, updateNote, deleteNote };
 };
 
 export default useFetchNote;
