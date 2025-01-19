@@ -2,9 +2,10 @@ import { Typography } from '@mui/material';
 import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import NotesList from '../components/Notes/NotesList';
+import LoadingSpinner from '../components/Shared/LoadingSpinner';
 import Navbar from '../components/ui/Navbar';
 import { AuthContext } from '../context/AuthContext';
-import useNotes from '../hooks/useNotes';
+import useNotes from '../hooks/useFetchNotes';
 
 const Home: React.FC = () => {
   const authContext = useContext(AuthContext);
@@ -14,10 +15,17 @@ const Home: React.FC = () => {
   }
 
   const { token } = authContext;
-  const { notes } = useNotes();
+  const { notes, loading } = useNotes();
 
   if (!token) {
     return <Navigate to="/login" />;
+  }
+
+  if (loading) {
+    <>
+      <Navbar />
+      <LoadingSpinner/>
+    </>
   }
 
   return (

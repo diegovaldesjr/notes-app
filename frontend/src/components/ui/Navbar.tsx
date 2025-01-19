@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
   };
 
   const handleCreateNote = () => {
-
+    navigate('/note')
   }
 
   return (
