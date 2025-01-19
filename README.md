@@ -11,6 +11,7 @@ Esta es una aplicación de notas que permite a los usuarios crear, leer, actuali
   - [Ejecutar Localmente](#ejecutar-localmente)
   - [Ejecutar con Docker](#ejecutar-con-docker)
 - [Variables de Entorno](#variables-de-entorno)
+- [Estrategia de Bloqueo Implementada](#estrategia-de-bloqueo-implementada)
 
 ## Características
 
@@ -131,5 +132,21 @@ APP_URL=http://localhost:3000
 REACT_APP_API_URL=http://localhost:8000
 PORT=3000
 ```
+## Estrategia de Bloqueo Implementada
+
+La estrategia de bloqueo que se implemento fue el bloqueo optimista, ya que es el más adecuado para sistemas con alta concurrencia.
+
+Este enfoque permite que múltiples transacciones lean los datos sin bloquearse entre sí. Solo se verifica la versión o el estado de los datos al momento de la actualización. Esto reduce la posibilidad de cuellos de botella, ya que las transacciones no se bloquean entre sí durante la lectura.
+
+### Implementación
+
+#### Versionado 
+
+Se agrego un campo de versión a al modelo. Al actualizar, verifica que la versión en la base de datos coincida con la versión que el cliente tiene.
+
+#### Manejo de Conflictos
+
+Si hay un conflicto, informa al cliente y permite que vuelva a intentar la operación.
+
 
 Espero les guste el proyecto. Feliz día!
